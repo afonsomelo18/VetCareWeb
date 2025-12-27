@@ -228,4 +228,23 @@ public class AgendamentoDAO {
     	    }
     }
     
+    public void insert(Agendamento a) throws SQLException {
+        String sql = "INSERT INTO AGENDAMENTO (id_paciente, id_servico, localidade, dia_semana, nif_tutor, data_hora, estado, observacoes) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, 'marcado', ?)";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, a.getId_paciente());
+            ps.setInt(2, a.getId_servico());
+            ps.setString(3, a.getLocalidade());
+            ps.setInt(4, a.getDia_semana());
+            ps.setString(5, a.getNif_tutor());
+            ps.setTimestamp(6, a.getData_hora());
+            ps.setString(7, a.getObs() != null ? a.getObs() : ""); // Evitar null
+            
+            ps.executeUpdate();
+        }
+    }
+    
 }

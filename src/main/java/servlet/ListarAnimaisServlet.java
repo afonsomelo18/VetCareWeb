@@ -90,6 +90,8 @@ public class ListarAnimaisServlet extends HttpServlet {
 
                 out.println("<div>");
                 out.println("<h3 style='margin:0;'>🐾 " + ficha.getNome() + "</h3>");
+                out.println("<button onclick=\"prepararAgendamento(" + idPaciente + ", '" + ficha.getNome() + "', '" + nif + "')\" " +
+                        "style='background-color:green; color:white; margin-top:5px;'>📅 Marcar Consulta</button>");
                 out.println("<p style='margin:4px 0;'>Idade: " + idade +
                             " | Escalão: <strong>" + escalao + "</strong></p>");
                 out.println("</div>");

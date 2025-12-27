@@ -61,6 +61,34 @@ public class TutorDAO {
 		return tutores;
 	}
 	
-	
+	public void save(Tutor t) throws SQLException {
+	    String sql = "INSERT INTO TUTOR (nif, nome, contacto, pref_linguistica, tipo, id_freguesia, id_concelho) " +
+	                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, t.getNif());
+	        ps.setString(2, t.getNome()); // Nota: Adicionaste a coluna 'nome' no SQL ontem [cite: 137]
+	        ps.setString(3, t.getContacto());
+	        ps.setString(4, t.getLingua());
+	        ps.setString(5, t.getTipo());
+	        ps.setInt(6, t.getIdFreguesia());
+	        ps.setInt(7, t.getIdConcelho());
+	        ps.executeUpdate();
+	    }
+	}
+
+	public void update(Tutor t) throws SQLException {
+	    String sql = "UPDATE TUTOR SET nome=?, contacto=?, pref_linguistica=?, id_freguesia=?, id_concelho=? WHERE nif=?";
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, t.getNome());
+	        ps.setString(2, t.getContacto());
+	        ps.setString(3, t.getLingua());
+	        ps.setInt(4, t.getIdFreguesia());
+	        ps.setInt(5, t.getIdConcelho());
+	        ps.setString(6, t.getNif());
+	        ps.executeUpdate();
+	    }
+	}
 
 }

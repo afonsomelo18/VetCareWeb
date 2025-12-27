@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -186,6 +187,54 @@ public class PacienteDAO {
             e.printStackTrace();
         }
         return lista;
+    }
+    
+    public void insertCompleto(Paciente p, FichaMedica f) throws SQLException {
+        String sqlPaciente = "INSERT INTO PACIENTE (nome_comum_especie, nome_comum_raca, nif_tutor, id_sistema) VALUES (?, ?, ?, ?)";
+        String sqlFicha = "INSERT INTO FICHA_MEDICA (id_paciente, nome, sexo, data_nascimento, foto, estado_reprodutivo) VALUES (?, ?, ?, ?, ?, ?)";
+
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Iniciar Transação (tudo ou nada)
+
+            // 1. Inserir na tabela PACIENTE e obter o ID gerado
+            int idGerado = 0;
+            try (PreparedStatement ps = conn.prepareStatement(sqlPaciente, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, p.getNomeEspecie());
+                ps.setString(2, p.getNomeRaca());
+                ps.setString(3, p.getNIF_tutor());
+                ps.setInt(4, 1); // id_sistema default (assumindo 1 por agora)
+                ps.executeUpdate();
+
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        idGerado = rs.getInt(1);
+                    }
+                }
+            }
+
+            // 2. Inserir na tabela FICHA_MEDICA usando o ID gerado
+            if (idGerado > 0) {
+                try (PreparedStatement ps2 = conn.prepareStatement(sqlFicha)) {
+                    ps2.setInt(1, idGerado);
+                    ps2.setString(2, f.getNome());
+                    ps2.setString(3, f.getSexo());
+                    ps2.setDate(4, f.getData_nasc());
+                    ps2.setString(5, f.getFoto()); // Caminho da foto
+                    ps2.setString(6, f.getEstadoReprodutivo());
+                    ps2.executeUpdate();
+                }
+            }
+
+            conn.commit(); // Confirma tudo
+        } catch (SQLException e) {
+            if (conn != null) conn.rollback(); // Desfaz se der erro
+            throw e;
+        } finally {
+            if (conn != null) conn.setAutoCommit(true);
+            if (conn != null) conn.close();
+        }
     }
 
 }
