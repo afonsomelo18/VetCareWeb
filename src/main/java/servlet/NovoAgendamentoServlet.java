@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException; // <--- IMPORTANTE: Novo import
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -28,7 +29,7 @@ public class NovoAgendamentoServlet extends HttpServlet {
             String dataHoraStr = request.getParameter("dataHora"); // ex: "2024-01-30T10:00"
             String numLicenca = request.getParameter("veterinario"); // Vem do select
             
-            // --- CORREÇÃO: Definir a localidade certa baseada no médico ---
+            // --- Lógica para definir a localidade baseada no médico ---
             String localidade = "Lisboa-Arroios"; // Valor por defeito
 
             if ("COI555".equals(numLicenca)) {
@@ -46,6 +47,7 @@ public class NovoAgendamentoServlet extends HttpServlet {
             int diaSemana = ldt.getDayOfWeek().getValue(); // 1 (Seg) a 7 (Dom)
 
             // 2. Criar o SERVICO primeiro (Tabela Pai)
+            // Se a clínica estiver fechada neste dia, o insert falha aqui e lança a exceção abaixo
             ServicoDAO servicoDAO = new ServicoDAO();
             int idServico = servicoDAO.insert(tipoServico, numLicenca, localidade, diaSemana);
             
@@ -53,12 +55,19 @@ public class NovoAgendamentoServlet extends HttpServlet {
             Agendamento ag = new Agendamento(0, idAnimal, idServico, localidade, diaSemana, nifTutor, dataHora, "marcado", "Agendado via Web");
             new AgendamentoDAO().insert(ag);
             
-            // Sucesso
+            // Sucesso: Redireciona com mensagem de sucesso
             response.sendRedirect("view/rececionista/Rececionista.jsp?msg=AgendadoComSucesso");
 
-        } catch (SQLException | NumberFormatException e) {
+        } catch (SQLIntegrityConstraintViolationException e) {
+            // --- TRATAMENTO ESPECÍFICO: CLÍNICA FECHADA ---
+            // Apanha o erro quando não existe horário para aquela localidade/dia
             e.printStackTrace();
-            response.getWriter().write("Erro ao agendar: " + e.getMessage());
+            response.sendRedirect("view/rececionista/Rececionista.jsp?msg=ClinicaFechada");
+
+        } catch (SQLException | NumberFormatException e) {
+            // --- TRATAMENTO GENÉRICO: OUTROS ERROS ---
+            e.printStackTrace();
+            response.sendRedirect("view/rececionista/Rececionista.jsp?msg=ErroTecnico");
         }
     }
 }

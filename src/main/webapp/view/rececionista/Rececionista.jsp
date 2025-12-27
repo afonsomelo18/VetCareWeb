@@ -161,6 +161,27 @@
         document.getElementById("inputIdAnimalHidden").value = idAnimal;
     }
 </script>
+<script>
+    window.onload = function() {
+        // Ler os parâmetros do URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const msg = urlParams.get('msg');
+
+        if (msg === 'ClinicaFechada') {
+            // POPUP DE ERRO
+            alert("❌ Erro no Agendamento:\n\nA clínica selecionada encontra-se FECHADA nesse dia ou horário.\nPor favor verifique se é fim de semana ou feriado.");
+        } 
+        else if (msg === 'AgendadoComSucesso') {
+            // POPUP DE SUCESSO
+            alert("✅ Sucesso!\n\nA consulta foi agendada corretamente.");
+            // Limpar o URL para o popup não aparecer se fizer refresh
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+        else if (msg === 'ErroTecnico') {
+            alert("⚠️ Ocorreu um erro técnico. Verifique os dados e tente novamente.");
+        }
+    };
+</script>
     </fieldset>
 
 </body>
