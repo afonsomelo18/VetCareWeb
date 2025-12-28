@@ -17,6 +17,10 @@ public class Agendamento {
 	private String estado;
 	private String obs;
 	
+	public Agendamento() {
+		// Necessário para o Servlet criar o objeto passo-a-passo
+	}
+	
 	public Agendamento(int id_agendamento, int id_paciente, int id_servico, String localidade, int dia_semana,
 			String nif_tutor, Timestamp data_hora, String estado, String obs) {
 		super();

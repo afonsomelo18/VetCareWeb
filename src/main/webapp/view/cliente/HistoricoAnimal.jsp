@@ -30,6 +30,11 @@
     .tag-estado { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
     .estado-marcado { background: #e3f2fd; color: #1565c0; }
     .estado-concluido { background: #e8f5e9; color: #2e7d32; }
+    
+    .btn-ver { 
+        display: inline-block; padding: 10px 20px; text-decoration: none; 
+        border-radius: 4px; font-weight: bold; color: white; 
+    }
 </style>
 </head>
 <body>
@@ -43,7 +48,7 @@
             // Lista Geral (usada para calcular Futuros)
             List<Agendamento> agenda = (List<Agendamento>) request.getAttribute("agenda");
             
-            // NOVA LISTA: Histórico Específico (Concluídos) vinda do findHistoricoByPaciente
+            // Lista Específica de Histórico (Concluídos)
             List<Agendamento> historico = (List<Agendamento>) request.getAttribute("historico");
             
             Date hoje = new Date();
@@ -68,14 +73,31 @@
             </div>
         </div>
 
+        <% if (fm != null) { %>
+            <div style="margin: 20px 0; text-align: right;">
+                <a href="view/cliente/Agendar.jsp?tipo=agendar&idPaciente=<%= p.getIdPaciente() %>" 
+                   class="btn-ver" style="background-color: #008CBA;">
+                   ➕ Marcar Nova Consulta
+                </a>
+            </div>
+        <% } %>
+
         <h2>📅 Próximos Agendamentos</h2>
         <table>
-            <tr><th>Data/Hora</th><th>Serviço</th><th>Localidade</th><th>Estado</th></tr>
+            <tr>
+                <th>Data/Hora</th>
+                <th>Serviço</th>
+                <th>Localidade</th>
+                <th>Estado</th>
+                <th>Ações</th> </tr>
             <% 
             boolean temFuturo = false;
             if(agenda != null) {
                 for(Agendamento a : agenda) {
-                    if(a.getData_hora().after(hoje)) { 
+                    // Mostrar apenas agendamentos futuros e ativos (não cancelados/concluídos)
+                    if(a.getData_hora().after(hoje) && 
+                       !a.getEstado().equalsIgnoreCase("cancelado") && 
+                       !a.getEstado().equalsIgnoreCase("concluido")) { 
                         temFuturo = true;
             %>
                 <tr class="futuro-row">
@@ -83,12 +105,23 @@
                     <td><%= a.getObs() %></td> 
                     <td><%= a.getLocalidade() %></td>
                     <td><span class="tag-estado estado-marcado"><%= a.getEstado() %></span></td>
+                    <td>
+                        <a href="view/cliente/Agendar.jsp?tipo=reagendar&idPaciente=<%= p.getIdPaciente() %>&idAgendamento=<%= a.getId_agendamento() %>" 
+                           style="color: blue; margin-right: 15px; font-weight:bold; text-decoration:none;">Reagendar</a>
+                        
+                        <form action="portalCliente" method="post" style="display:inline;" onsubmit="return confirm('Tem a certeza que deseja cancelar esta consulta?');">
+                            <input type="hidden" name="acao" value="cancelar">
+                            <input type="hidden" name="idPaciente" value="<%= p.getIdPaciente() %>">
+                            <input type="hidden" name="idAgendamento" value="<%= a.getId_agendamento() %>">
+                            <button type="submit" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; text-decoration:underline;">Cancelar</button>
+                        </form>
+                    </td>
                 </tr>
             <%      }
                 }
             } 
             if(!temFuturo) { %>
-                <tr><td colspan="4" style="text-align:center; color:gray;">Sem consultas agendadas.</td></tr>
+                <tr><td colspan="5" style="text-align:center; color:gray;">Sem consultas agendadas.</td></tr>
             <% } %>
         </table>
 
@@ -98,7 +131,7 @@
             <% 
             if(historico != null && !historico.isEmpty()) {
                 for(Agendamento a : historico) {
-                    // Lógica de formatação para ficar bonito (separa [CONSULTA] do texto)
+                    // Formatação visual para separar [TIPO] das observações
                     String obsCompleta = a.getObs();
                     String tipo = obsCompleta; 
                     String detalhes = "";
@@ -122,7 +155,7 @@
         </table>
         
         <br>
-        <a href="portalCliente" class="btn-ver" style="background:#555; text-decoration:none; color:white; padding:10px; border-radius:5px;">&larr; Voltar aos meus animais</a>
+        <a href="portalCliente" class="btn-ver" style="background:#555; margin-top:20px;">&larr; Voltar aos meus animais</a>
     </div>
 </body>
 </html>

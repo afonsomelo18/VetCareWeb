@@ -11,6 +11,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import dao.ServicoDAO;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import java.io.IOException;
 import java.util.List;
@@ -73,12 +76,87 @@ public class PortalClienteServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        String nif = request.getParameter("nif");
-        if (nif != null && !nif.isEmpty()) {
-            request.getSession().setAttribute("nifCliente", nif);
-            response.sendRedirect("portalCliente");
-        } else {
-            response.sendRedirect("view/cliente/LoginCliente.jsp?msg=NifInvalido");
+        
+        request.setCharacterEncoding("UTF-8");
+        String acao = request.getParameter("acao");
+        HttpSession session = request.getSession();
+        
+        // --- 1. TENTATIVA DE LOGIN (PRIORIDADE MÁXIMA) ---
+        // Verificamos primeiro se o formulário enviou um NIF
+        String nifFormulario = request.getParameter("nif");
+        
+        if (nifFormulario != null && !nifFormulario.isEmpty()) {
+            // É um login! Guardar na sessão e entrar.
+            session.setAttribute("nifCliente", nifFormulario);
+            response.sendRedirect("portalCliente"); // Vai para o doGet carregar a lista
+            return; // Importante: Parar por aqui
+        }
+
+        // --- 2. VERIFICAÇÃO DE SEGURANÇA ---
+        // Se não é login, o utilizador JÁ TEM de estar na sessão para fazer outras coisas (agendar, etc.)
+        String nifSessao = (String) session.getAttribute("nifCliente");
+        
+        if (nifSessao == null) {
+            // Se não tem sessão e não está a tentar logar, expulsa-o
+            response.sendRedirect("view/cliente/LoginCliente.jsp");
+            return;
+        }
+
+        // --- 3. PROCESSAR AÇÕES (Agendar, Reagendar, Cancelar) ---
+        try {
+            AgendamentoDAO agendamentoDAO = new AgendamentoDAO();
+            ServicoDAO servicoDAO = new ServicoDAO();
+
+            if ("agendar".equals(acao)) {
+                int idPaciente = Integer.parseInt(request.getParameter("idPaciente"));
+                String dataStr = request.getParameter("dataHora");
+                String motivo = request.getParameter("motivo");
+                
+                LocalDateTime ldt = LocalDateTime.parse(dataStr);
+                Timestamp dataHora = Timestamp.valueOf(ldt);
+                int diaSemana = ldt.getDayOfWeek().getValue(); 
+
+                // CORRETO (Tem de ser 'consulta' minúsculo):
+                int idServico = servicoDAO.createServicoSolicitado("consulta", diaSemana);
+
+                if (idServico > 0) {
+                    Agendamento a = new Agendamento();
+                    a.setId_paciente(idPaciente);
+                    a.setId_servico(idServico);
+                    a.setLocalidade("Lisboa-Arroios");
+                    a.setDia_semana(diaSemana);
+                    a.setNif_tutor(nifSessao); // Usa o NIF da sessão
+                    a.setData_hora(dataHora);
+                    a.setObs(motivo);
+                    
+                    agendamentoDAO.insert(a);
+                }
+                response.sendRedirect("portalCliente?acao=detalhes&idAnimal=" + idPaciente);
+
+            } else if ("reagendar".equals(acao)) {
+                int idAgendamento = Integer.parseInt(request.getParameter("idAgendamento"));
+                int idPaciente = Integer.parseInt(request.getParameter("idPaciente"));
+                String novaDataStr = request.getParameter("novaData");
+
+                LocalDateTime ldt = LocalDateTime.parse(novaDataStr);
+                Timestamp novaData = Timestamp.valueOf(ldt);
+
+                agendamentoDAO.reagendar(idAgendamento, novaData);
+                
+                response.sendRedirect("portalCliente?acao=detalhes&idAnimal=" + idPaciente);
+
+            } else if ("cancelar".equals(acao)) {
+                int idAgendamento = Integer.parseInt(request.getParameter("idAgendamento"));
+                int idPaciente = Integer.parseInt(request.getParameter("idPaciente"));
+
+                agendamentoDAO.cancelar(idAgendamento);
+                
+                response.sendRedirect("portalCliente?acao=detalhes&idAnimal=" + idPaciente);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("view/cliente/MeusAnimais.jsp?msg=ErroOperacao");
         }
     }
 }

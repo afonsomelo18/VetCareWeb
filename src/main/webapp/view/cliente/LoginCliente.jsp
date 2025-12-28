@@ -32,7 +32,7 @@
         <p>Introduza o seu NIF para aceder.</p>
         
         <form action="<%= request.getContextPath() %>/portalCliente" method="post">
-            <input type="text" name="nif" placeholder="NIF do Tutor" required pattern="[0-9]{9}" title="Deve ter 9 dígitos">
+            <input type="text" name="nif" placeholder="NIF do Tutor" required pattern="[0-9]{8,9}" title="Deve ter 8 ou 9 dígitos">
             <button type="submit">Entrar</button>
         </form>
 
