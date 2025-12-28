@@ -72,7 +72,7 @@ public class ListarAnimaisServlet extends HttpServlet {
                 String caminhoFoto;
 
                 if (foto == null || foto.isEmpty()) {
-                    caminhoFoto = request.getContextPath() + "/images/animais/default.png";
+                    caminhoFoto = request.getContextPath() + "/uploads/animais/default.png";
                 } else {
                     caminhoFoto = request.getContextPath() + "/" + foto;
                 }

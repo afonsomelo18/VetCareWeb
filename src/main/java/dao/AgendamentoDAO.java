@@ -247,4 +247,44 @@ public class AgendamentoDAO {
         }
     }
     
+    public List<Agendamento> getByPaciente(int idPaciente) throws SQLException {
+        List<Agendamento> lista = new ArrayList<>();
+        // Vamos buscar também o tipo de serviço para mostrar na lista
+        String sql = "SELECT a.*, s.tipo_servico FROM AGENDAMENTO a " +
+                     "JOIN SERVICO s ON a.id_servico = s.id_servico " +
+                     "WHERE a.id_paciente = ? " +
+                     "AND a.estado IN ('marcado', 'reagendado') " +
+                     "ORDER BY a.data_hora DESC"; // Mais recentes primeiro
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, idPaciente);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Nota: O construtor do Agendamento pode precisar de ajustes ou usamos setters
+                    Agendamento a = new Agendamento(
+                        rs.getInt("id_agendamento"),
+                        rs.getInt("id_paciente"),
+                        rs.getInt("id_servico"),
+                        rs.getString("localidade"),
+                        rs.getInt("dia_semana"),
+                        rs.getString("nif_tutor"),
+                        rs.getTimestamp("data_hora"),
+                        rs.getString("estado"),
+                        rs.getString("observacoes")
+                    );
+                    // Truque rápido: Vamos guardar o nome do serviço nas observações 
+                    // ou teríamos de alterar o Modelo Agendamento para ter campo "nomeServico".
+                    // Para simplificar agora, vou concatenar nas observações:
+                    String tipo = rs.getString("tipo_servico");
+                    a.setObs("[" + tipo + "] " + (a.getObs() == null ? "" : a.getObs()));
+                    
+                    lista.add(a);
+                }
+            }
+        }
+        return lista;
+    }
+    
 }

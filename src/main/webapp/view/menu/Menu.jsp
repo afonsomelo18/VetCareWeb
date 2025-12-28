@@ -1,20 +1,48 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Menu</title>
-</head>
-<body>
-	<h1>Menu</h1>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
-	<label for="perfil">Perfil:</label>
-	<select id="perfil" onchange="if(this.value) window.location.href=this.value;">
-  		<option value="">-- Selecionar --</option>
-  		<option value="../rececionista/Rececionista.jsp">Rececionista</option>
-  	<!-- para mais tarde -->
-  	 	<option value="../vet/Veterinario.jsp">Veterinário</option>
-	</select>
-</body>
-</html>
+<style>
+    /* Estilo da Barra */
+    .navbar {
+        background-color: #333;
+        overflow: hidden;
+        font-family: sans-serif;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    /* Links da Barra */
+    .navbar a {
+        float: left;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 20px;
+        text-decoration: none;
+        font-size: 16px;
+    }
+
+    /* Efeito ao passar o rato */
+    .navbar a:hover {
+        background-color: #ddd;
+        color: black;
+    }
+
+    /* Destaque para a marca */
+    .navbar .brand {
+        background-color: #4CAF50; /* Verde VetCare */
+        font-weight: bold;
+    }
+</style>
+
+<div class="navbar">
+    
+    <a href="<%= request.getContextPath() %>/index.jsp" class="brand">🏥 VetCare</a>
+
+    <a href="<%= request.getContextPath() %>/view/rececionista/Rececionista.jsp">👤 Rececionista</a>
+
+    <a href="<%= request.getContextPath() %>/view/vet/Agenda.jsp">📅 Agenda</a>
+    <a href="<%= request.getContextPath() %>/view/vet/FichaMedica.jsp">📋 Ficha Médica</a>
+
+    <a href="<%= request.getContextPath() %>/index.jsp" style="float:right; background-color: #f44336;">🚪 Sair</a>
+
+</div>

@@ -50,7 +50,7 @@ public class IniciarServicoServlet extends HttpServlet{
         	String tipo = servicoDAO.findTipoServicoById(idServico);
         	
         	out.println("<h2>Registo Clínico: " + tipo.toUpperCase() + "</h2>");
-            out.println("<form action='iniciarServico' method='POST'>");
+        	out.println("<form action='" + request.getContextPath() + "/iniciarServico' method='post'>");
             
             // Campos ocultos para manter a referência
             out.println("<input type='hidden' name='idServico' value='" + idServico + "'>");
@@ -110,6 +110,8 @@ public class IniciarServicoServlet extends HttpServlet{
     }
 
     private void gerarCamposMedPrev(PrintWriter out) {
+    	out.println("<label>Tipo (ex: Vacina, Desparasitante):</label><br>");
+        out.println("<input type='text' name='tipo' required><br>");
         out.println("<label>Produto:</label><br><input type='text' name='produto'><br>");
         out.println("<label>Fabricante:</label><br><input type='text' name='fabricante'><br>");
         out.println("<label>Próxima Aplicação:</label><br><input type='date' name='proxAplicacao'><br>");
@@ -155,24 +157,23 @@ public class IniciarServicoServlet extends HttpServlet{
             	exameDAO.insert(e);
             	break;
             case "med_prev":
-            	// Converter a String da data para java.sql.Date
             	String dataString = request.getParameter("proxAplicacao");
-            	java.sql.Date proxAplicacao = null;
+                java.sql.Date proxAplicacao = null;
                 if (dataString != null && !dataString.isEmpty()) {
                     proxAplicacao = java.sql.Date.valueOf(dataString);
                 }
                 
-            	Med_Prev m = new Med_Prev(idServico, null, "ativo", tipoServico, null, null, 0, 
-            			request.getParameter("tipo"),
-            			request.getParameter("produto"),
-            			request.getParameter("fabricante"),
-            			proxAplicacao);
-            	medDAO.insert(m);
-            	break;
+                Med_Prev m = new Med_Prev(idServico, null, "ativo", tipoServico, null, null, 0, 
+                    request.getParameter("tipo"), // <--- ESTA LINHA TEM DE ESTAR AQUI PARA LER O HTML ACIMA
+                    request.getParameter("produto"),
+                    request.getParameter("fabricante"),
+                    proxAplicacao);
+                medDAO.insert(m);
+                break;
         	}
         	// Mudar o estado do agendamento para concluído para ele sair da agenda
         	agDAO.concluir(idAgendamento);
-        	response.sendRedirect("agenda.jsp?msg=Servico finalizado com sucesso");
+        	response.sendRedirect("Agenda.jsp?msg=Servico finalizado com sucesso");
         }
         catch(SQLException e) {
         	e.printStackTrace();

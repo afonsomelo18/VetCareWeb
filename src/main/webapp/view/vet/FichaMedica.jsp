@@ -7,6 +7,7 @@
 <title>Area de Veterinário</title>
 </head>
 <body>
+<jsp:include page="/view/menu/Menu.jsp" />
 	<!-- AutoComplete -->
 	<h2>Pesquisa Tutor</h2>
 	<input type="text" id="tutorInput" list="resultados" placeholder="Nome do tutor">

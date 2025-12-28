@@ -6,6 +6,7 @@
     <title>Registo Clínico</title>
     </head>
 <body>
+<jsp:include page="/view/menu/Menu.jsp" />
     <div class="container">
         
         <jsp:include page="/iniciarServico" />

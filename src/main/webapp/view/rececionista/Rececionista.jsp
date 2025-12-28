@@ -6,6 +6,7 @@
 <title>Painel Rececionista</title>
 </head>
 <body>
+<jsp:include page="/view/menu/Menu.jsp" />
     <h1>Área do Rececionista</h1>
     
     <fieldset>

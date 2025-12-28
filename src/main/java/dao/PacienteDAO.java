@@ -236,5 +236,42 @@ public class PacienteDAO {
             if (conn != null) conn.close();
         }
     }
+    
+    public List<Paciente> getByNifTutor(String nif) throws SQLException {
+        List<Paciente> lista = new ArrayList<>();
+        String sql = "SELECT id_paciente, nome_comum_especie, nome_comum_raca, nif_tutor, id_sistema, id_progenitor " +
+                     "FROM PACIENTE WHERE nif_tutor = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, nif);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Tratar id_progenitor que pode ser NULL (0)
+                    int idProgenitor = rs.getInt("id_progenitor");
+                    if (rs.wasNull()) idProgenitor = 0;
+
+                    Paciente p = new Paciente(
+                        rs.getInt("id_paciente"),
+                        rs.getString("nome_comum_especie"),
+                        rs.getString("nome_comum_raca"),
+                        rs.getString("nif_tutor"),
+                        rs.getInt("id_sistema"),
+                        idProgenitor
+                    );
+                    
+                    // Pequeno truque: Vamos tentar obter o nome do animal da tabela FICHA_MEDICA se existir
+                    // Se não tiver ficha, ficamos sem o nome "próprio" (ex: Bobby), apenas a raça.
+                    // Para simplificar, assumimos que a UI trata disso ou fazemos um JOIN opcional.
+                    // Mas para não complicar o teu SQL agora, vamos deixar assim.
+                    // O ideal seria fazer um JOIN com FICHA_MEDICA aqui, mas vamos usar o findFichaById na View se precisares do nome.
+                    
+                    lista.add(p);
+                }
+            }
+        }
+        return lista;
+    }
 
 }

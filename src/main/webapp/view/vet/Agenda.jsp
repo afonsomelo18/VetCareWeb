@@ -8,6 +8,7 @@
 <title>Agenda do Veterinário</title>
 </head>
 <body>
+<jsp:include page="/view/menu/Menu.jsp" />
 	<h2>Serviços Agendados</h2>
 	<button type="button" id="btnIniciarServico" disabled>Iniciar Serviço (1º da lista)</button>
 	<button type="button" id="btnCancelar" disabled>Cancelar (1º da lista)</button>
@@ -62,17 +63,24 @@
 	      .catch(console.error);
 	  }
 
-	  document.getElementById("btnIniciarServico").addEventListener("click", function () {
-	    const idServico = this.dataset.idservico;
-	    const idAgendamento = this.dataset.idagendamento;
-	    if (!idServico || !idAgendamento) return;
-
-	    // Abre NOVA PÁGINA (JSP) que vai chamar o servlet via forward/include
-	    window.location.href =
-	    	  "IniciarServico.jsp?idServico=" + encodeURIComponent(idServico) +
-	    	  "&idAgendamento=" + encodeURIComponent(idAgendamento);
-
-	  });
+		document.getElementById("btnIniciarServico").addEventListener("click", function () {
+		    const idServico = this.dataset.idservico;
+		    const idAgendamento = this.dataset.idagendamento;
+		    
+		    // Verificação de segurança
+		    if (!idServico || !idAgendamento) {
+		        console.error("IDs em falta no botão");
+		        return;
+		    }
+	
+		    // CORREÇÃO AQUI: Usar o caminho completo desde a raiz do projeto
+		    // Certifica-te que o ficheiro IniciarServico.jsp está na pasta view/vet/
+		    window.location.href = 
+		        "<%= request.getContextPath() %>/view/vet/IniciarServico.jsp?idServico=" + 
+		        encodeURIComponent(idServico) + 
+		        "&idAgendamento=" + 
+		        encodeURIComponent(idAgendamento);
+		});
 	  
 		// --- EVENTO CANCELAR ---
 	  document.getElementById("btnCancelar").addEventListener("click", function() {
